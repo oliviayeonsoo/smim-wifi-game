@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SMIM · 와이파이 미션</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@100;200;300;400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root { color-scheme: dark; }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;background:#070d18;font-family:'Gothic A1',system-ui,sans-serif;}
+  a{color:#8fd8ff;text-decoration:none;}
+
+  /* ---------- keyframes (from source design) ---------- */
+  @keyframes smim-twinkle{0%,100%{opacity:.2}50%{opacity:1}}
+  @keyframes smim-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+  @keyframes smim-glow{0%,100%{opacity:.5;transform:translate(-50%,-50%) scale(1)}50%{opacity:.82;transform:translate(-50%,-50%) scale(1.08)}}
+  @keyframes smim-float{0%{transform:translateY(40px) scale(.5);opacity:0}18%{opacity:.85}100%{transform:translateY(-160px) scale(1.05);opacity:0}}
+  @keyframes smim-cardup{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes smim-ripple{0%{transform:translate(-50%,-50%) scale(.5);opacity:.55}100%{transform:translate(-50%,-50%) scale(2.1);opacity:0}}
+  @keyframes smim-soft{0%,100%{box-shadow:0 0 0 0 rgba(120,200,255,.4)}50%{box-shadow:0 0 0 12px rgba(120,200,255,0)}}
+  @keyframes smim-shine{0%{background-position:-160% 0}100%{background-position:260% 0}}
+  @keyframes smim-mascot-wave{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-14deg)}75%{transform:rotate(14deg)}}
+  @keyframes smim-mascot-bounce{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-14px) scale(1.05)}}
+
+  /* ---------- page shell ---------- */
+  #stage{
+    min-height:100vh;
+    min-height:100dvh;
+    display:flex;align-items:center;justify-content:center;
+    padding:0;
+    background:radial-gradient(120% 90% at 50% 0%,#12203a 0%,#0a1220 60%,#070d18 100%);
+  }
+  #app{
+    position:relative;
+    width:100%;
+    max-width:460px;
+    min-height:100vh;
+    min-height:100dvh;
+    overflow:hidden;
+    background:linear-gradient(180deg,#1a3c66 0%,#1e365f 20%,#2a2b56 50%,#1a2440 76%,#0b1424 100%);
+    color:#eef4ff;
+    box-shadow:0 40px 90px rgba(0,0,0,.5);
+  }
+
+  /* ambient night sky (always visible) */
+  .moon-glow{position:absolute;top:-70px;right:-40px;width:360px;height:360px;border-radius:50%;background:radial-gradient(circle,rgba(245,231,170,.22) 0%,rgba(245,231,170,.06) 38%,transparent 62%);pointer-events:none;}
+  .moon{position:absolute;top:44px;right:44px;width:52px;height:52px;border-radius:50%;background:radial-gradient(circle at 38% 34%,#f7ecc0,#e9d488);box-shadow:0 0 30px rgba(245,231,170,.5);opacity:.85;pointer-events:none;}
+  #stars{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+  #stars .star{position:absolute;border-radius:50%;box-shadow:0 0 6px rgba(255,255,255,.5);}
+  .mountains{position:absolute;bottom:0;left:0;width:100%;height:150px;pointer-events:none;opacity:.55;}
+
+  /* ---------- phases ---------- */
+  .phase{display:none;position:relative;min-height:100vh;min-height:100dvh;box-sizing:border-box;flex-direction:column;align-items:center;}
+  .phase.active{display:flex;}
+
+  /* intro */
+  #phase-intro{padding:64px 30px 40px;text-align:center;}
+  .wordmark{display:flex;align-items:center;justify-content:center;gap:13px;margin-bottom:22px;opacity:.96;}
+  .wordmark-text{position:relative;padding:11px 4px;}
+  .wordmark-text::before,.wordmark-text::after{content:"";position:absolute;left:-14px;right:-14px;height:1px;}
+  .wordmark-text::before{top:11px;background:rgba(180,212,255,.32);}
+  .wordmark-text::after{bottom:11px;background:rgba(180,212,255,.18);}
+  .wordmark-text span{font-weight:300;font-size:23px;letter-spacing:15px;color:#eef4ff;padding-left:15px;position:relative;}
+  .badge{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:999px;background:rgba(143,216,255,.12);border:1px solid rgba(143,216,255,.28);backdrop-filter:blur(8px);margin-bottom:34px;}
+  .badge-dot{width:6px;height:6px;border-radius:50%;background:#8fd8ff;box-shadow:0 0 8px #8fd8ff;}
+  .badge span.label{font-size:13px;font-weight:500;letter-spacing:.3px;color:#bcd6f5;}
+  h1.headline{margin:0 0 20px;font-weight:700;font-size:40px;line-height:1.24;letter-spacing:-.5px;color:#f4f9ff;}
+  p.sub{margin:0;font-weight:300;font-size:19px;line-height:1.55;color:#a9bcdd;}
+  p.sub b{font-weight:700;color:#8fd8ff;}
+
+  .mascot-zone{position:relative;flex:1;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:14px 0;min-height:300px;}
+  .speech{position:relative;padding:12px 22px;border-radius:20px 20px 20px 4px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(10px);margin-bottom:6px;animation:smim-bob 3.4s ease-in-out infinite;z-index:3;}
+  .speech span{font-size:16px;font-weight:500;color:#eaf2ff;}
+  .mascot-wrap{position:relative;width:100%;height:290px;display:flex;align-items:center;justify-content:center;}
+  .mascot-glow{position:absolute;left:50%;top:54%;width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,rgba(120,205,255,.5) 0%,rgba(120,205,255,.12) 46%,transparent 68%);filter:blur(6px);animation:smim-glow 4s ease-in-out infinite;}
+  .mascot-video{position:relative;height:290px;width:auto;mix-blend-mode:screen;filter:drop-shadow(0 12px 26px rgba(60,150,230,.4));-webkit-mask-image:radial-gradient(ellipse 94% 96% at 50% 47%,#000 72%,transparent 100%);mask-image:radial-gradient(ellipse 94% 96% at 50% 47%,#000 72%,transparent 100%);}
+  .mascot-fallback{position:relative;height:200px;width:200px;display:flex;align-items:center;justify-content:center;font-size:120px;filter:drop-shadow(0 12px 26px rgba(60,150,230,.5));}
+  .mascot-fallback.celebrate{animation:smim-mascot-bounce 1.1s ease-in-out infinite;}
+  .mascot-fallback.shake{animation:smim-mascot-wave .5s ease-in-out infinite;}
+
+  #playing .mascot-wrap{height:250px;min-height:250px;}
+  #playing .mascot-video{height:300px;}
+  #playing .mascot-glow{width:250px;height:250px;top:52%;animation-duration:3.2s;}
+  #success .mascot-wrap{height:212px;flex:none;}
+  #success .mascot-video{height:230px;}
+  #success .mascot-glow{width:240px;height:240px;top:52%;animation-duration:3.4s;}
+
+  .cta-btn{width:100%;border:none;cursor:pointer;padding:19px;border-radius:20px;background:linear-gradient(180deg,#63c6ff,#2e8fe0);color:#fff;font-family:'Gothic A1';font-weight:700;font-size:21px;letter-spacing:.5px;box-shadow:0 12px 30px rgba(46,143,224,.5),inset 0 1px 0 rgba(255,255,255,.45);display:flex;align-items:center;justify-content:center;gap:10px;animation:smim-soft 2.6s ease-in-out infinite;transition:filter .15s;}
+  .cta-btn:hover{filter:brightness(1.06);}
+  .cta-btn:active{filter:brightness(.95);}
+  .privacy-note{margin:16px 0 0;font-size:12.5px;font-weight:300;color:#6f83a6;}
+
+  /* playing */
+  #phase-playing{padding:60px 26px 40px;}
+  #phase-playing h2{margin:0 0 4px;font-weight:700;font-size:30px;letter-spacing:-.4px;color:#f4f9ff;text-align:center;}
+  #phase-playing .hint{margin:0 0 8px;font-size:14px;font-weight:300;color:#8fa5c9;}
+  .playing-mascot{position:relative;flex:1;width:100%;display:flex;align-items:center;justify-content:center;min-height:250px;}
+  .ripple{position:absolute;left:50%;top:62%;width:180px;height:180px;border-radius:50%;border:2px solid rgba(150,215,255,.6);opacity:0;pointer-events:none;}
+
+  .bottom-row{display:flex;gap:14px;width:100%;align-items:stretch;margin-top:6px;}
+  .counter-card{flex:1;border-radius:22px;background:rgba(255,255,255,.06);border:1px solid rgba(160,200,255,.16);backdrop-filter:blur(10px);padding:18px 20px;display:flex;flex-direction:column;justify-content:center;}
+  .counter-num-row{display:flex;align-items:baseline;gap:4px;}
+  .counter-num{font-family:'JetBrains Mono';font-weight:700;font-size:52px;line-height:.9;color:#8fd8ff;text-shadow:0 0 22px rgba(120,205,255,.5);}
+  .counter-goal{font-family:'JetBrains Mono';font-weight:500;font-size:22px;color:#5d7297;}
+  .segs{display:flex;gap:3px;margin-top:14px;}
+  .seg{flex:1;height:6px;border-radius:3px;background:rgba(160,200,255,.16);transition:background .25s;}
+  .seg.filled{background:#8fd8ff;}
+
+  .cam-card{width:126px;flex:none;border-radius:22px;overflow:hidden;position:relative;background:rgba(10,20,38,.6);border:1.5px solid rgba(143,216,255,.4);box-shadow:0 0 0 4px rgba(143,216,255,.06);}
+  .cam-card video{width:100%;height:100%;object-fit:cover;transform:scaleX(-1);display:block;}
+  .cam-badge{position:absolute;top:8px;left:8px;display:flex;align-items:center;gap:5px;padding:3px 8px;border-radius:999px;background:rgba(10,20,38,.55);backdrop-filter:blur(4px);}
+  .cam-badge .dot{width:6px;height:6px;border-radius:50%;background:#ff6b6b;box-shadow:0 0 6px #ff6b6b;}
+  .cam-badge span{font-size:10px;font-weight:500;color:#e6eefc;}
+  .cam-denied{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:12px;background:rgba(12,22,42,.9);}
+  .cam-denied.show{display:flex;}
+  .cam-denied span{font-size:11px;font-weight:400;line-height:1.4;color:#a9bcdd;}
+  .status-note{margin:16px 0 0;font-size:13px;font-weight:300;letter-spacing:1px;color:#6f83a6;}
+
+  /* success */
+  #phase-success{padding:56px 26px 40px;}
+  .droplet{position:absolute;bottom:120px;border-radius:50% 50% 50% 0;transform:rotate(45deg);background:radial-gradient(circle at 35% 30%,rgba(190,232,255,.95),rgba(110,190,250,.5));pointer-events:none;z-index:1;}
+  .pw-card{position:relative;z-index:2;width:100%;border-radius:26px;background:linear-gradient(165deg,rgba(255,255,255,.11),rgba(255,255,255,.05));border:1px solid rgba(160,200,255,.2);backdrop-filter:blur(16px);box-shadow:0 20px 50px rgba(6,16,34,.5),inset 0 1px 0 rgba(255,255,255,.2);padding:30px 26px;animation:smim-cardup .7s cubic-bezier(.16,1,.3,1) both;overflow:hidden;}
+  .pw-card::before{content:"";position:absolute;top:-40%;left:20%;width:60%;height:80%;background:radial-gradient(circle,rgba(140,215,255,.25),transparent 70%);pointer-events:none;}
+  .pw-inner{position:relative;text-align:center;}
+  .clear-badge{display:inline-flex;align-items:center;gap:7px;padding:6px 14px;border-radius:999px;background:rgba(143,216,255,.14);border:1px solid rgba(143,216,255,.3);margin-bottom:14px;}
+  .clear-badge span{font-size:12px;font-weight:500;color:#8fd8ff;letter-spacing:.5px;}
+  .pw-inner h2{margin:0 0 20px;font-weight:900;font-size:34px;letter-spacing:-.5px;color:#f4f9ff;}
+  .pw-box{border-radius:18px;background:rgba(9,18,36,.4);border:1px solid rgba(160,200,255,.14);padding:18px;margin-bottom:22px;}
+  .pw-box p.ssid{margin:0 0 4px;font-size:12px;font-weight:400;letter-spacing:1.5px;color:#7d93b8;}
+  .pw-box p.label{margin:0 0 6px;font-size:13px;font-weight:400;color:#a9bcdd;}
+  .pw-value{font-family:'JetBrains Mono';font-weight:700;font-size:26px;letter-spacing:.5px;color:#eaf6ff;background:linear-gradient(100deg,#eaf6ff 20%,#8fd8ff 40%,#eaf6ff 60%);background-size:220% auto;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:smim-shine 3.2s linear infinite;word-break:break-all;}
+  .eco-fact{position:relative;text-align:left;border-top:1px solid rgba(160,200,255,.14);padding-top:20px;}
+  .eco-fact h3{margin:0 0 10px;font-weight:700;font-size:18px;color:#8fd8ff;}
+  .eco-fact p{margin:0;font-size:14px;font-weight:300;line-height:1.65;color:#b3c4e2;}
+  .reset-btn{margin-top:20px;width:100%;border:none;cursor:pointer;padding:16px;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(160,200,255,.2);color:#cdddf5;font-family:'Gothic A1';font-weight:500;font-size:16px;backdrop-filter:blur(8px);transition:background .15s;}
+  .reset-btn:hover{background:rgba(255,255,255,.14);}
+</style>
+</head>
+<body>
+
+<div id="stage">
+<div id="app">
+
+  <!-- ambient decorations (visible in every phase) -->
+  <div class="moon-glow"></div>
+  <div class="moon"></div>
+  <div id="stars"></div>
+  <svg class="mountains" viewBox="0 0 402 150" preserveAspectRatio="none">
+    <path d="M0 150 L0 96 L58 44 L112 92 L168 30 L232 96 L286 54 L344 100 L402 62 L402 150 Z" fill="#0c1730"></path>
+    <path d="M0 150 L0 118 L74 78 L150 120 L214 82 L292 122 L360 92 L402 118 L402 150 Z" fill="#0a1122"></path>
+  </svg>
+
+  <!-- ============ INTRO ============ -->
+  <section id="phase-intro" class="phase active">
+    <div class="wordmark">
+      <svg width="20" height="26" viewBox="0 0 20 26" fill="none"><path d="M10 1.5C10 1.5 2.5 12 2.5 17.5a7.5 7.5 0 0 0 15 0C17.5 12 10 1.5 10 1.5Z" stroke="#9fd8ff" stroke-width="1.3"></path><circle cx="7.5" cy="16.5" r="1.5" fill="#9fd8ff" opacity=".8"></circle></svg>
+      <div class="wordmark-text"><span>SMIM</span></div>
+      <svg width="42" height="14" viewBox="0 0 42 14" fill="none"><path d="M1 11 L15 3 L25 9 L41 1" stroke="#dfeaff" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" opacity=".8"></path></svg>
+    </div>
+
+    <div class="badge">
+      <span class="badge-dot"></span>
+      <span class="label">스밈과 함께하는 지구 살리기</span>
+    </div>
+
+    <h1 class="headline">와이파이가<br>필요하신가요?</h1>
+    <p class="sub">손을 <b id="intro-goal">12번</b> 흔들면<br>비밀번호가 나타나요</p>
+
+    <div class="mascot-zone">
+      <div class="speech"><span>도전해볼까요?</span></div>
+      <div class="mascot-wrap">
+        <div class="mascot-glow"></div>
+        <video class="mascot-video" data-kind="celebrate" muted playsinline loop></video>
+        <div class="mascot-fallback celebrate" style="display:none;">🫧</div>
+      </div>
+    </div>
+
+    <button class="cta-btn" id="start-btn">
+      미션 시작
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M8 2.5C8 2.5 4 8 4 11a4 4 0 0 0 8 0C12 8 8 2.5 8 2.5Z" fill="rgba(255,255,255,.9)"></path><path d="M15 6C15 6 12.5 9.5 12.5 11.4a2.5 2.5 0 0 0 5 0C17.5 9.5 15 6 15 6Z" fill="rgba(255,255,255,.7)"></path></svg>
+    </button>
+    <p class="privacy-note">카메라 영상은 저장되지 않아요</p>
+  </section>
+
+  <!-- ============ PLAYING ============ -->
+  <section id="phase-playing" class="phase">
+    <h2 id="playing-title">잘하고 있어요!</h2>
+    <p class="hint">손을 위아래로 힘차게 털어요</p>
+
+    <div class="playing-mascot">
+      <div class="mascot-glow"></div>
+      <div class="ripple" id="ripple"></div>
+      <video class="mascot-video" data-kind="shake" muted playsinline loop></video>
+      <div class="mascot-fallback shake" style="display:none;">👋</div>
+    </div>
+
+    <div class="bottom-row">
+      <div class="counter-card">
+        <div class="counter-num-row">
+          <span class="counter-num" id="count-num">0</span>
+          <span class="counter-goal" id="count-goal">/12</span>
+        </div>
+        <div class="segs" id="segs"></div>
+      </div>
+      <div class="cam-card">
+        <video id="cam-video" autoplay muted playsinline></video>
+        <div class="cam-badge"><span class="dot"></span><span>셀프</span></div>
+        <div class="cam-denied" id="cam-denied">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><rect x="3" y="7" width="14" height="10" rx="2.5" stroke="#8fd8ff" stroke-width="1.5"></rect><path d="M17 10.5 L21 8 V16 L17 13.5" stroke="#8fd8ff" stroke-width="1.5" stroke-linejoin="round"></path></svg>
+          <span>화면을 탭하거나<br>스페이스로 흔들기</span>
+        </div>
+      </div>
+    </div>
+    <p class="status-note">비밀번호가 나오고 있어요 · · ·</p>
+  </section>
+
+  <!-- ============ SUCCESS ============ -->
+  <section id="phase-success" class="phase">
+    <div id="droplets"></div>
+
+    <div class="mascot-wrap">
+      <div class="mascot-glow"></div>
+      <video class="mascot-video" data-kind="celebrate" muted playsinline loop></video>
+      <div class="mascot-fallback celebrate" style="display:none;">🎉</div>
+    </div>
+
+    <div class="pw-card">
+      <div class="pw-inner">
+        <div class="clear-badge"><span>MISSION CLEAR</span></div>
+        <h2>미션 성공!</h2>
+        <div class="pw-box">
+          <p class="ssid">네트워크 · <span id="ssid-out"></span></p>
+          <p class="label">와이파이 비밀번호</p>
+          <div class="pw-value" id="pw-out"></div>
+        </div>
+      </div>
+      <div class="eco-fact">
+        <h3>그거 알아요?</h3>
+        <p>손을 12번 털면 약 20g의 이산화탄소가 감축돼요. 이는 1년에 소나무 5그루를 심는 효과와 같아요. 앞으로 손털기를 생활화하고 핸드타올을 아껴볼까요?</p>
+      </div>
+    </div>
+
+    <button class="reset-btn" id="reset-btn">다시 하기</button>
+  </section>
+
+</div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ======================================================================
+  //  설정값 (여기만 바꾸면 게임 난이도 / 와이파이 정보 조절 가능)
+  // ======================================================================
+  const CONFIG = {
+    wifiSsid: "SMIM-Guest",
+    wifiPassword: "kongkong1234",
+    shakeGoal: 12,        // 목표 흔들기 횟수 (5~20 권장)
+    sensitivity: 5,       // 감도 1(둔감) ~ 10(예민), 기본 5
+  };
+
+  const VIDS = {
+    shake: "assets/vids/이_친구가_손을_씻고_나서_위아래로_터는_모습을_제작하.mp4",
+    celebrate: "assets/vids/이_캐릭터가_둥둥_날고있는_상태에서_박수를_치는_모습.mp4",
+  };
+
+  const MANUAL_SHAKE_MIN_GAP = 170; // ms, 스페이스/탭 연타 방지
+  const SHAKE_COOLDOWN = 200;       // ms, 카메라 모션 감지 쿨다운
+
+  // ======================================================================
+  //  상태
+  // ======================================================================
+  const state = {
+    phase: "intro",   // intro | playing | success
+    count: 0,
+    camDenied: false,
+  };
+
+  let stream = null;
+  let rafId = null;
+  let prevFrame = null;
+  let armed = true;
+  let lastShake = 0;
+  let canvas = null;
+
+  const goal = Math.max(1, CONFIG.shakeGoal);
+
+  // ======================================================================
+  //  DOM refs
+  // ======================================================================
+  const $ = (sel) => document.querySelector(sel);
+  const phases = {
+    intro: $("#phase-intro"),
+    playing: $("#phase-playing"),
+    success: $("#phase-success"),
+  };
+  const countNum = $("#count-num");
+  const countGoal = $("#count-goal");
+  const segsEl = $("#segs");
+  const playingTitle = $("#playing-title");
+  const camVideo = $("#cam-video");
+  const camDeniedEl = $("#cam-denied");
+  const rippleEl = $("#ripple");
+  const ssidOut = $("#ssid-out");
+  const pwOut = $("#pw-out");
+  const introGoal = $("#intro-goal");
+
+  // ======================================================================
+  //  ambient decorations
+  // ======================================================================
+  const rnd = (a, b) => a + Math.random() * (b - a);
+
+  function buildStars() {
+    const wrap = $("#stars");
+    for (let i = 0; i < 13; i++) {
+      const s = document.createElement("div");
+      s.className = "star";
+      const size = rnd(2, 4);
+      s.style.top = rnd(6, 46).toFixed(1) + "%";
+      s.style.left = rnd(6, 94).toFixed(1) + "%";
+      s.style.width = size.toFixed(1) + "px";
+      s.style.height = size.toFixed(1) + "px";
+      s.style.background = i % 5 === 0 ? "#f5e7aa" : "#eaf3ff";
+      s.style.animation = `smim-twinkle ${rnd(2.4, 4.6).toFixed(1)}s ease-in-out infinite`;
+      s.style.animationDelay = rnd(0, 3).toFixed(1) + "s";
+      wrap.appendChild(s);
+    }
+  }
+
+  function buildDroplets() {
+    const wrap = $("#droplets");
+    wrap.innerHTML = "";
+    for (let i = 0; i < 11; i++) {
+      const d = document.createElement("div");
+      d.className = "droplet";
+      const size = rnd(9, 18);
+      d.style.left = rnd(8, 92).toFixed(1) + "%";
+      d.style.width = size.toFixed(0) + "px";
+      d.style.height = size.toFixed(0) + "px";
+      d.style.animation = `smim-float ${rnd(3.4, 5.6).toFixed(1)}s ease-in infinite`;
+      d.style.animationDelay = rnd(0, 4).toFixed(1) + "s";
+      wrap.appendChild(d);
+    }
+  }
+
+  function buildSegs() {
+    segsEl.innerHTML = "";
+    for (let i = 0; i < goal; i++) {
+      const s = document.createElement("div");
+      s.className = "seg";
+      segsEl.appendChild(s);
+    }
+  }
+
+  // ======================================================================
+  //  mascot video (with graceful fallback if mp4 files are missing)
+  // ======================================================================
+  function initMascotVideos() {
+    document.querySelectorAll(".mascot-video").forEach((video) => {
+      const kind = video.dataset.kind;
+      const src = VIDS[kind];
+      const fallback = video.parentElement.querySelector(".mascot-fallback");
+      video.addEventListener("error", () => {
+        video.style.display = "none";
+        if (fallback) fallback.style.display = "flex";
+      }, { once: true });
+      video.src = src;
+      video.play().catch(() => {});
+    });
+  }
+
+  // ======================================================================
+  //  phase transitions
+  // ======================================================================
+  function setPhase(next) {
+    state.phase = next;
+    Object.entries(phases).forEach(([name, el]) => {
+      el.classList.toggle("active", name === next);
+    });
+  }
+
+  function start() {
+    state.count = 0;
+    state.camDenied = false;
+    prevFrame = null;
+    armed = true;
+    lastShake = 0;
+    updateCounterUI();
+    setPhase("playing");
+    startCamera();
+  }
+
+  async function startCamera() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
+      camDeniedEl.classList.remove("show");
+      camVideo.srcObject = stream;
+      camVideo.play().catch(() => {});
+      if (!canvas) {
+        canvas = document.createElement("canvas");
+        canvas.width = 48;
+        canvas.height = 36;
+      }
+      rafId = requestAnimationFrame(loop);
+    } catch (e) {
+      state.camDenied = true;
+      camDeniedEl.classList.add("show");
+    }
+  }
+
+  function loop() {
+    if (state.phase !== "playing") return;
+    if (camVideo.readyState >= 2) {
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(camVideo, 0, 0, 48, 36);
+      const cur = ctx.getImageData(0, 0, 48, 36).data;
+      if (prevFrame) {
+        let sum = 0, n = 0;
+        for (let i = 0; i < cur.length; i += 16) {
+          sum += Math.abs(cur[i] - prevFrame[i]);
+          n++;
+        }
+        const diff = sum / n;
+        const sens = CONFIG.sensitivity;
+        const high = 16 * (1 - (sens - 5) * 0.11);
+        const low = high * 0.42;
+        const now = performance.now();
+        if (armed && diff > high && now - lastShake > SHAKE_COOLDOWN) {
+          armed = false;
+          lastShake = now;
+          registerShake();
+        } else if (diff < low) {
+          armed = true;
+        }
+      }
+      prevFrame = cur.slice(0);
+    }
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function manualShake() {
+    const now = performance.now();
+    if (now - lastShake < MANUAL_SHAKE_MIN_GAP) return;
+    lastShake = now;
+    registerShake();
+  }
+
+  function registerShake() {
+    if (state.phase !== "playing") return;
+    state.count = Math.min(goal, state.count + 1);
+    updateCounterUI();
+    pingRipple();
+    if (state.count >= goal) win();
+  }
+
+  function pingRipple() {
+    rippleEl.style.animation = "none";
+    void rippleEl.offsetWidth;
+    rippleEl.style.animation = "smim-ripple .65s ease-out";
+  }
+
+  function updateCounterUI() {
+    countNum.textContent = state.count;
+    const segs = segsEl.children;
+    for (let i = 0; i < segs.length; i++) {
+      segs[i].classList.toggle("filled", i < state.count);
+    }
+    const pct = state.count / goal;
+    let title = "잘하고 있어요!";
+    if (pct >= 1) title = "거의 다 됐어요!";
+    else if (pct >= 0.66) title = "조금만 더!";
+    else if (pct >= 0.33) title = "좋아요, 계속!";
+    playingTitle.textContent = title;
+  }
+
+  function win() {
+    teardown();
+    setPhase("success");
+    buildDroplets();
+  }
+
+  function reset() {
+    teardown();
+    setPhase("intro");
+    state.count = 0;
+    updateCounterUI();
+  }
+
+  function teardown() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = null;
+    if (stream) {
+      stream.getTracks().forEach((t) => t.stop());
+      stream = null;
+    }
+    prevFrame = null;
+  }
+
+  // ======================================================================
+  //  wire up
+  // ======================================================================
+  function init() {
+    introGoal.textContent = `${goal}번`;
+    countGoal.textContent = `/${goal}`;
+    ssidOut.textContent = CONFIG.wifiSsid;
+    pwOut.textContent = CONFIG.wifiPassword;
+
+    buildStars();
+    buildSegs();
+    initMascotVideos();
+
+    $("#start-btn").addEventListener("click", start);
+    $("#reset-btn").addEventListener("click", reset);
+
+    // 화면 탭으로도 흔들기 인식 (카메라 없이 테스트하거나 접근성 대체 수단)
+    // 단, 버튼 클릭이 버블링되어 오탭으로 잡히지 않도록 제외
+    $("#app").addEventListener("click", (e) => {
+      if (state.phase === "playing" && !e.target.closest("button")) {
+        manualShake();
+      }
+    });
+
+    window.addEventListener("keydown", (e) => {
+      if (e.code === "Space" && state.phase === "playing") {
+        e.preventDefault();
+        manualShake();
+      }
+    });
+  }
+
+  document.addEventListener("DOMContentLoaded", init);
+})();
+</script>
+</body>
+</html>
