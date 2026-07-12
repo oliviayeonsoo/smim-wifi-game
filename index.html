@@ -6,11 +6,13 @@
 <title>SMIM · 와이파이 미션</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@100;200;300;400;500;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@100;200;300;400;500;700;900&family=JetBrains+Mono:wght@500;700&family=Jua&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
 <style>
   :root { color-scheme: dark; }
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;height:100%;background:#070d18;font-family:'Gothic A1',system-ui,sans-serif;}
+  html,body{margin:0;padding:0;height:100%;background:#070d18;font-family:'Pretendard','Gothic A1',system-ui,sans-serif;}
+  .font-headline{font-family:'Jua','Gothic A1',system-ui,sans-serif;font-weight:400;}
   a{color:#8fd8ff;text-decoration:none;}
 
   /* ---------- keyframes (from source design) ---------- */
@@ -88,7 +90,7 @@
   #success .mascot-video{height:230px;}
   #success .mascot-glow{width:240px;height:240px;top:52%;animation-duration:3.4s;}
 
-  .cta-btn{width:100%;border:none;cursor:pointer;padding:19px;border-radius:20px;background:linear-gradient(180deg,#63c6ff,#2e8fe0);color:#fff;font-family:'Gothic A1';font-weight:700;font-size:21px;letter-spacing:.5px;box-shadow:0 12px 30px rgba(46,143,224,.5),inset 0 1px 0 rgba(255,255,255,.45);display:flex;align-items:center;justify-content:center;gap:10px;animation:smim-soft 2.6s ease-in-out infinite;transition:filter .15s;}
+  .cta-btn{width:100%;border:none;cursor:pointer;padding:19px;border-radius:20px;background:linear-gradient(180deg,#63c6ff,#2e8fe0);color:#fff;font-family:'Pretendard';font-weight:700;font-size:21px;letter-spacing:.5px;box-shadow:0 12px 30px rgba(46,143,224,.5),inset 0 1px 0 rgba(255,255,255,.45);display:flex;align-items:center;justify-content:center;gap:10px;animation:smim-soft 2.6s ease-in-out infinite;transition:filter .15s;}
   .cta-btn:hover{filter:brightness(1.06);}
   .cta-btn:active{filter:brightness(.95);}
   .privacy-note{margin:16px 0 0;font-size:12.5px;font-weight:300;color:#6f83a6;}
@@ -135,7 +137,7 @@
   .eco-fact{position:relative;text-align:left;border-top:1px solid rgba(160,200,255,.14);padding-top:20px;}
   .eco-fact h3{margin:0 0 10px;font-weight:700;font-size:18px;color:#8fd8ff;}
   .eco-fact p{margin:0;font-size:14px;font-weight:300;line-height:1.65;color:#b3c4e2;}
-  .reset-btn{margin-top:20px;width:100%;border:none;cursor:pointer;padding:16px;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(160,200,255,.2);color:#cdddf5;font-family:'Gothic A1';font-weight:500;font-size:16px;backdrop-filter:blur(8px);transition:background .15s;}
+  .reset-btn{margin-top:20px;width:100%;border:none;cursor:pointer;padding:16px;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(160,200,255,.2);color:#cdddf5;font-family:'Pretendard';font-weight:500;font-size:16px;backdrop-filter:blur(8px);transition:background .15s;}
   .reset-btn:hover{background:rgba(255,255,255,.14);}
 </style>
 </head>
@@ -166,7 +168,7 @@
       <span class="label">스밈과 함께하는 지구 살리기</span>
     </div>
 
-    <h1 class="headline">와이파이가<br>필요하신가요?</h1>
+    <h1 class="headline font-headline">와이파이가<br>필요하신가요?</h1>
     <p class="sub">손을 <b id="intro-goal">12번</b> 흔들면<br>비밀번호가 나타나요</p>
 
     <div class="mascot-zone">
@@ -187,7 +189,7 @@
 
   <!-- ============ PLAYING ============ -->
   <section id="phase-playing" class="phase">
-    <h2 id="playing-title">잘하고 있어요!</h2>
+    <h2 id="playing-title" class="font-headline">잘하고 있어요!</h2>
     <p class="hint">손을 위아래로 힘차게 털어요</p>
 
     <div class="playing-mascot">
@@ -230,7 +232,7 @@
     <div class="pw-card">
       <div class="pw-inner">
         <div class="clear-badge"><span>MISSION CLEAR</span></div>
-        <h2>미션 성공!</h2>
+        <h2 class="font-headline">미션 성공!</h2>
         <div class="pw-box">
           <p class="ssid">네트워크 · <span id="ssid-out"></span></p>
           <p class="label">와이파이 비밀번호</p>
