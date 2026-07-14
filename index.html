@@ -334,7 +334,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
   import {
     getFirestore, doc, getDoc, updateDoc, setDoc, increment,
-    collection, query, orderBy, limit, getDocs,
+    collection, query, orderBy, limit, getDocs, documentId,
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
   "use strict";
@@ -714,7 +714,7 @@
 
   async function loadStats() {
     const visitsCol = collection(db, "cafes", cafeId, "visits");
-    const q = query(visitsCol, orderBy("__name__", "desc"), limit(STATS_DAYS));
+    const q = query(visitsCol, orderBy(documentId(), "desc"), limit(STATS_DAYS));
     const snap = await getDocs(q);
     const byDate = {};
     snap.forEach((d) => { byDate[d.id] = d.data().count || 0; });
@@ -757,6 +757,7 @@
       $("#admin-visit-total").textContent = `최근 ${STATS_DAYS}일 · 총 ${total}명`;
       $("#admin-chart").innerHTML = renderChart(rows);
     } catch (e) {
+      console.error("loadStats failed:", e);
       $("#admin-chart").innerHTML = '<p class="modal-error">통계를 불러오지 못했어요</p>';
     }
   }
