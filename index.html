@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>SMIM · 와이파이 미션</title>
+<title>SMIM · 화장실 미션</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@100;200;300;400;500;700;900&family=JetBrains+Mono:wght@500;700&family=Jua&display=swap" rel="stylesheet">
@@ -15,7 +15,7 @@
   .font-headline{font-family:'Jua','Gothic A1',system-ui,sans-serif;font-weight:400;}
   a{color:#8fd8ff;text-decoration:none;}
 
-  /* ---------- keyframes (from source design) ---------- */
+  /* ---------- keyframes ---------- */
   @keyframes smim-twinkle{0%,100%{opacity:.2}50%{opacity:1}}
   @keyframes smim-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
   @keyframes smim-glow{0%,100%{opacity:.5;transform:translate(-50%,-50%) scale(1)}50%{opacity:.82;transform:translate(-50%,-50%) scale(1.08)}}
@@ -26,6 +26,9 @@
   @keyframes smim-shine{0%{background-position:-160% 0}100%{background-position:260% 0}}
   @keyframes smim-mascot-wave{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-14deg)}75%{transform:rotate(14deg)}}
   @keyframes smim-mascot-bounce{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-14px) scale(1.05)}}
+  @keyframes smim-spin{to{transform:rotate(360deg)}}
+  @keyframes smim-shake-x{0%,100%{transform:translate(-50%,-50%) translateX(0)}25%{transform:translate(-50%,-50%) translateX(-6px)}75%{transform:translate(-50%,-50%) translateX(6px)}}
+  @keyframes smim-modal-in{from{opacity:0;transform:translate(-50%,-50%) translateY(20px)}to{opacity:1;transform:translate(-50%,-50%) translateY(0)}}
 
   /* ---------- page shell ---------- */
   #stage{
@@ -54,22 +57,28 @@
   #stars .star{position:absolute;border-radius:50%;box-shadow:0 0 6px rgba(255,255,255,.5);}
   .mountains{position:absolute;bottom:0;left:0;width:100%;height:150px;pointer-events:none;opacity:.55;}
 
+  /* ---------- boot overlay (loading / error) ---------- */
+  #boot-overlay{position:absolute;inset:0;z-index:150;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;padding:40px;background:linear-gradient(180deg,#1a3c66 0%,#1e365f 20%,#2a2b56 50%,#1a2440 76%,#0b1424 100%);}
+  #boot-spinner{width:34px;height:34px;border-radius:50%;border:3px solid rgba(143,216,255,.22);border-top-color:#8fd8ff;animation:smim-spin .8s linear infinite;}
+  #boot-text{margin:0;font-size:14.5px;line-height:1.6;color:#a9bcdd;}
+
   /* ---------- phases ---------- */
   .phase{display:none;position:relative;min-height:100vh;min-height:100dvh;box-sizing:border-box;flex-direction:column;align-items:center;}
   .phase.active{display:flex;}
 
   /* intro */
-  #phase-intro{padding:64px 30px 40px;text-align:center;}
-  .wordmark{display:flex;align-items:center;justify-content:center;gap:13px;margin-bottom:22px;opacity:.96;}
+  #phase-intro{padding:56px 30px 40px;text-align:center;}
+  .wordmark{display:flex;align-items:center;justify-content:center;gap:13px;margin-bottom:10px;opacity:.96;}
   .wordmark-text{position:relative;padding:11px 4px;}
   .wordmark-text::before,.wordmark-text::after{content:"";position:absolute;left:-14px;right:-14px;height:1px;}
   .wordmark-text::before{top:11px;background:rgba(180,212,255,.32);}
   .wordmark-text::after{bottom:11px;background:rgba(180,212,255,.18);}
   .wordmark-text span{font-weight:300;font-size:23px;letter-spacing:15px;color:#eef4ff;padding-left:15px;position:relative;}
+  .cafe-tag{min-height:16px;margin:0 0 18px;font-size:12px;font-weight:500;letter-spacing:.3px;color:#6f83a6;}
   .badge{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;border-radius:999px;background:rgba(143,216,255,.12);border:1px solid rgba(143,216,255,.28);backdrop-filter:blur(8px);margin-bottom:34px;}
   .badge-dot{width:6px;height:6px;border-radius:50%;background:#8fd8ff;box-shadow:0 0 8px #8fd8ff;}
   .badge span.label{font-size:13px;font-weight:500;letter-spacing:.3px;color:#bcd6f5;}
-  h1.headline{margin:0 0 20px;font-weight:700;font-size:40px;line-height:1.24;letter-spacing:-.5px;color:#f4f9ff;}
+  h1.headline{margin:0 0 20px;font-weight:700;font-size:38px;line-height:1.26;letter-spacing:-.5px;color:#f4f9ff;}
   p.sub{margin:0;font-weight:300;font-size:19px;line-height:1.55;color:#a9bcdd;}
   p.sub b{font-weight:700;color:#8fd8ff;}
 
@@ -139,6 +148,34 @@
   .eco-fact p{margin:0;font-size:14px;font-weight:300;line-height:1.65;color:#b3c4e2;}
   .reset-btn{margin-top:20px;width:100%;border:none;cursor:pointer;padding:16px;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(160,200,255,.2);color:#cdddf5;font-family:'Pretendard';font-weight:500;font-size:16px;backdrop-filter:blur(8px);transition:background .15s;}
   .reset-btn:hover{background:rgba(255,255,255,.14);}
+
+  /* ---------- gear / admin ---------- */
+  #gear-btn{position:absolute;left:14px;bottom:14px;width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.06);opacity:.38;display:none;align-items:center;justify-content:center;cursor:pointer;z-index:5;transition:opacity .2s,background .2s;padding:0;}
+  #gear-btn:hover{opacity:.85;background:rgba(255,255,255,.12);}
+  #gear-btn.show{display:flex;}
+
+  .modal-backdrop{position:fixed;inset:0;background:rgba(4,10,20,.72);backdrop-filter:blur(3px);z-index:200;display:none;}
+  .modal-backdrop.show{display:block;}
+  .modal-card{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(340px,86vw);max-height:82vh;overflow-y:auto;background:linear-gradient(165deg,#22395f,#182a49);border:1px solid rgba(160,200,255,.22);border-radius:22px;box-shadow:0 24px 60px rgba(0,0,0,.5);padding:26px 22px;z-index:201;display:none;color:#eef4ff;}
+  .modal-card.show{display:block;animation:smim-modal-in .35s ease both;}
+  .modal-card.shake{animation:smim-shake-x .3s ease;}
+  .modal-card-wide{width:min(380px,90vw);}
+  .modal-close{position:absolute;top:14px;right:14px;width:28px;height:28px;border-radius:50%;border:none;background:rgba(255,255,255,.08);color:#cdddf5;cursor:pointer;font-size:13px;line-height:1;}
+  .modal-card h3{margin:0 0 18px;font-size:19px;padding-right:20px;}
+  .modal-input{width:100%;box-sizing:border-box;padding:12px 14px;border-radius:12px;border:1px solid rgba(160,200,255,.25);background:rgba(9,18,36,.5);color:#eef4ff;font-size:15px;font-family:'JetBrains Mono';outline:none;}
+  .modal-input:focus{border-color:#8fd8ff;}
+  .modal-error{min-height:16px;margin:8px 0 0;font-size:12.5px;color:#ff8a8a;}
+  .modal-hint{min-height:16px;margin:8px 0 0;font-size:12.5px;color:#8fd8ff;}
+  .modal-cta{margin-top:16px;padding:13px;font-size:16px;animation:none;}
+  .admin-section{margin-top:20px;padding-top:18px;border-top:1px solid rgba(160,200,255,.14);}
+  .admin-section:first-of-type{margin-top:0;padding-top:0;border-top:none;}
+  .admin-label{margin:0 0 8px;font-size:13px;font-weight:500;color:#a9bcdd;display:flex;justify-content:space-between;align-items:baseline;gap:8px;}
+  .admin-label span.count{font-weight:400;color:#6f83a6;font-size:11.5px;white-space:nowrap;}
+  .admin-row{display:flex;gap:8px;}
+  .admin-row .modal-input{flex:1;}
+  .admin-save-btn{padding:0 18px;border-radius:12px;border:none;background:#63c6ff;color:#04121f;font-weight:700;cursor:pointer;font-size:14px;}
+  .admin-save-btn:disabled{opacity:.5;cursor:default;}
+  #admin-chart svg{display:block;}
 </style>
 </head>
 <body>
@@ -162,13 +199,14 @@
       <div class="wordmark-text"><span>SMIM</span></div>
       <svg width="42" height="14" viewBox="0 0 42 14" fill="none"><path d="M1 11 L15 3 L25 9 L41 1" stroke="#dfeaff" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" opacity=".8"></path></svg>
     </div>
+    <p class="cafe-tag" id="cafe-tag-out"></p>
 
     <div class="badge">
       <span class="badge-dot"></span>
       <span class="label">스밈과 함께하는 지구 살리기</span>
     </div>
 
-    <h1 class="headline font-headline">와이파이가<br>필요하신가요?</h1>
+    <h1 class="headline font-headline">화장실 비밀번호가<br>필요하신가요?</h1>
     <p class="sub">손을 <b id="intro-goal">12번</b> 흔들면<br>비밀번호가 나타나요</p>
 
     <div class="mascot-zone">
@@ -234,8 +272,8 @@
         <div class="clear-badge"><span>MISSION CLEAR</span></div>
         <h2 class="font-headline">미션 성공!</h2>
         <div class="pw-box">
-          <p class="ssid">네트워크 · <span id="ssid-out"></span></p>
-          <p class="label">와이파이 비밀번호</p>
+          <p class="ssid" id="cafe-label-out"></p>
+          <p class="label">화장실 비밀번호</p>
           <div class="pw-value" id="pw-out"></div>
         </div>
       </div>
@@ -248,21 +286,69 @@
     <button class="reset-btn" id="reset-btn">다시 하기</button>
   </section>
 
+  <!-- ============ BOOT OVERLAY (loading / error) ============ -->
+  <div id="boot-overlay">
+    <div id="boot-spinner"></div>
+    <p id="boot-text">불러오는 중...</p>
+  </div>
+
+  <!-- ============ ADMIN GEAR ============ -->
+  <button id="gear-btn" aria-label="관리자 설정">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="#cdddf5" stroke-width="1.6"></path><path d="M19.4 13a7.5 7.5 0 000-2l2-1.5-2-3.4-2.3.9a7.6 7.6 0 00-1.7-1L15 3.5h-4l-.4 2.5a7.6 7.6 0 00-1.7 1l-2.3-.9-2 3.4L6.6 11a7.5 7.5 0 000 2l-2 1.5 2 3.4 2.3-.9c.5.4 1.1.75 1.7 1l.4 2.5h4l.4-2.5c.6-.25 1.2-.6 1.7-1l2.3.9 2-3.4-2-1.5z" stroke="#cdddf5" stroke-width="1.3" stroke-linejoin="round"></path></svg>
+  </button>
+
 </div>
 </div>
 
-<script>
-(() => {
+<!-- ============ ADMIN MODALS ============ -->
+<div class="modal-backdrop" id="modal-backdrop"></div>
+
+<div class="modal-card" id="admin-login-modal">
+  <button class="modal-close" data-close>✕</button>
+  <h3 class="font-headline">관리자 로그인</h3>
+  <input id="admin-pw-input" type="password" placeholder="관리자 비밀번호" class="modal-input" autocomplete="off">
+  <p class="modal-error" id="admin-login-error"></p>
+  <button class="cta-btn modal-cta" id="admin-login-submit">확인</button>
+</div>
+
+<div class="modal-card modal-card-wide" id="admin-dashboard-modal">
+  <button class="modal-close" data-close>✕</button>
+  <h3 class="font-headline" id="admin-cafe-name">관리자 페이지</h3>
+
+  <div class="admin-section">
+    <p class="admin-label">화장실 비밀번호</p>
+    <div class="admin-row">
+      <input id="admin-pw-edit" type="text" class="modal-input" autocomplete="off">
+      <button class="admin-save-btn" id="admin-pw-save">저장</button>
+    </div>
+    <p class="modal-hint" id="admin-save-msg"></p>
+  </div>
+
+  <div class="admin-section">
+    <p class="admin-label">방문자 통계 <span class="count" id="admin-visit-total"></span></p>
+    <div id="admin-chart"><p class="modal-hint">불러오는 중...</p></div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import {
+    getFirestore, doc, getDoc, updateDoc, setDoc, increment,
+    collection, query, orderBy, limit, getDocs,
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
   "use strict";
 
   // ======================================================================
-  //  설정값 (여기만 바꾸면 게임 난이도 / 와이파이 정보 조절 가능)
+  //  Firebase 설정 — Firebase 콘솔 > 프로젝트 설정 > 내 앱에서 복사해 붙여넣기
   // ======================================================================
-  const CONFIG = {
-    wifiSsid: "SMIM-Guest",
-    wifiPassword: "kongkong1234",
-    shakeGoal: 12,        // 목표 흔들기 횟수 (5~20 권장)
-    sensitivity: 5,       // 감도 1(둔감) ~ 10(예민), 기본 5
+  const firebaseConfig = {
+    apiKey: "PASTE_YOUR_API_KEY",
+    authDomain: "PASTE_YOUR_PROJECT.firebaseapp.com",
+    projectId: "PASTE_YOUR_PROJECT_ID",
+    storageBucket: "PASTE_YOUR_PROJECT.appspot.com",
+    messagingSenderId: "PASTE_YOUR_SENDER_ID",
+    appId: "PASTE_YOUR_APP_ID",
   };
 
   const VIDS = {
@@ -272,10 +358,17 @@
 
   const MANUAL_SHAKE_MIN_GAP = 170; // ms, 스페이스/탭 연타 방지
   const SHAKE_COOLDOWN = 200;       // ms, 카메라 모션 감지 쿨다운
+  const STATS_DAYS = 14;            // 관리자 패널에 보여줄 최근 방문 통계 일수
 
   // ======================================================================
-  //  상태
+  //  카페별 런타임 상태 (Firestore에서 로드됨)
   // ======================================================================
+  let db = null;
+  let cafeId = null;
+  let cafeData = null;   // { name, restroomPassword, adminPassword, shakeGoal, sensitivity }
+  let goal = 12;
+  let sensitivity = 5;
+
   const state = {
     phase: "intro",   // intro | playing | success
     count: 0,
@@ -288,8 +381,6 @@
   let armed = true;
   let lastShake = 0;
   let canvas = null;
-
-  const goal = Math.max(1, CONFIG.shakeGoal);
 
   // ======================================================================
   //  DOM refs
@@ -307,9 +398,81 @@
   const camVideo = $("#cam-video");
   const camDeniedEl = $("#cam-denied");
   const rippleEl = $("#ripple");
-  const ssidOut = $("#ssid-out");
+  const cafeLabelOut = $("#cafe-label-out");
+  const cafeTagOut = $("#cafe-tag-out");
   const pwOut = $("#pw-out");
   const introGoal = $("#intro-goal");
+  const gearBtn = $("#gear-btn");
+
+  // ======================================================================
+  //  부트스트랩: URL의 ?cafe= 로 카페 문서를 불러온 뒤 게임을 시작
+  // ======================================================================
+  function todayKey() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  function showBootError(html) {
+    $("#boot-text").innerHTML = html;
+    $("#boot-spinner").style.display = "none";
+  }
+
+  async function boot() {
+    const params = new URLSearchParams(location.search);
+    cafeId = params.get("cafe");
+
+    if (!cafeId) {
+      showBootError("카페 코드가 없어요.<br>사장님께 받은 QR코드로 접속해주세요.");
+      return;
+    }
+
+    if (firebaseConfig.apiKey.startsWith("PASTE_")) {
+      showBootError("아직 Firebase 설정이 연결되지 않았어요.<br>(개발자용 안내: firebaseConfig를 채워주세요)");
+      return;
+    }
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      db = getFirestore(app);
+    } catch (e) {
+      showBootError("설정 오류가 발생했어요.<br>잠시 후 다시 시도해주세요.");
+      return;
+    }
+
+    try {
+      const snap = await getDoc(doc(db, "cafes", cafeId));
+      if (!snap.exists()) {
+        showBootError("존재하지 않는 카페예요.<br>QR코드를 다시 확인해주세요.");
+        return;
+      }
+      cafeData = snap.data();
+    } catch (e) {
+      showBootError("연결에 실패했어요.<br>인터넷 연결을 확인해주세요.");
+      return;
+    }
+
+    goal = Math.max(1, cafeData.shakeGoal || 12);
+    sensitivity = cafeData.sensitivity || 5;
+
+    document.title = (cafeData.name ? cafeData.name + " · " : "") + "SMIM 화장실 미션";
+    cafeTagOut.textContent = cafeData.name ? `📍 ${cafeData.name}` : "";
+    cafeLabelOut.textContent = cafeData.name ? `${cafeData.name} 화장실` : "화장실";
+    pwOut.textContent = cafeData.restroomPassword || "";
+
+    initGame();
+    $("#boot-overlay").style.display = "none";
+    gearBtn.classList.add("show");
+
+    trackVisit();
+  }
+
+  async function trackVisit() {
+    try {
+      await setDoc(doc(db, "cafes", cafeId, "visits", todayKey()), { count: increment(1) }, { merge: true });
+    } catch (e) {
+      // 통계 기록 실패는 게임 진행에 영향 없음 — 조용히 무시
+    }
+  }
 
   // ======================================================================
   //  ambient decorations
@@ -383,6 +546,7 @@
     Object.entries(phases).forEach(([name, el]) => {
       el.classList.toggle("active", name === next);
     });
+    gearBtn.classList.toggle("show", next === "intro");
   }
 
   function start() {
@@ -427,8 +591,7 @@
           n++;
         }
         const diff = sum / n;
-        const sens = CONFIG.sensitivity;
-        const high = 16 * (1 - (sens - 5) * 0.11);
+        const high = 16 * (1 - (sensitivity - 5) * 0.11);
         const low = high * 0.42;
         const now = performance.now();
         if (armed && diff > high && now - lastShake > SHAKE_COOLDOWN) {
@@ -503,13 +666,135 @@
   }
 
   // ======================================================================
+  //  관리자 패널
+  // ======================================================================
+  const backdrop = $("#modal-backdrop");
+  const loginModal = $("#admin-login-modal");
+  const dashModal = $("#admin-dashboard-modal");
+  const adminPwInput = $("#admin-pw-input");
+  const adminLoginError = $("#admin-login-error");
+
+  function openModal(modal) {
+    backdrop.classList.add("show");
+    modal.classList.add("show");
+  }
+
+  function closeModals() {
+    backdrop.classList.remove("show");
+    loginModal.classList.remove("show");
+    dashModal.classList.remove("show");
+    adminPwInput.value = "";
+    adminLoginError.textContent = "";
+  }
+
+  function handleAdminLogin() {
+    const val = adminPwInput.value;
+    if (!cafeData || !val || val !== cafeData.adminPassword) {
+      adminLoginError.textContent = "비밀번호가 틀렸어요";
+      loginModal.classList.remove("shake");
+      void loginModal.offsetWidth;
+      loginModal.classList.add("shake");
+      return;
+    }
+    loginModal.classList.remove("show");
+    adminPwInput.value = "";
+    adminLoginError.textContent = "";
+    openAdminDashboard();
+  }
+
+  function todayKeyList(n) {
+    const out = [];
+    const d = new Date();
+    for (let i = 0; i < n; i++) {
+      out.push(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
+      d.setDate(d.getDate() - 1);
+    }
+    return out.reverse();
+  }
+
+  async function loadStats() {
+    const visitsCol = collection(db, "cafes", cafeId, "visits");
+    const q = query(visitsCol, orderBy("__name__", "desc"), limit(STATS_DAYS));
+    const snap = await getDocs(q);
+    const byDate = {};
+    snap.forEach((d) => { byDate[d.id] = d.data().count || 0; });
+    // 방문 없는 날도 0으로 채워서 최근 STATS_DAYS일을 빠짐없이 표시
+    return todayKeyList(STATS_DAYS).map((date) => ({ date, count: byDate[date] || 0 }));
+  }
+
+  function renderChart(rows) {
+    const w = 288, h = 110, gap = 4;
+    const barW = rows.length ? (w / rows.length) - gap : 0;
+    const max = Math.max(1, ...rows.map((r) => r.count));
+    let bars = "";
+    rows.forEach((r, i) => {
+      const barH = r.count > 0 ? Math.max(3, (r.count / max) * (h - 22)) : 2;
+      const x = i * (barW + gap);
+      const y = h - barH;
+      const showLabel = rows.length <= 10 || i % 2 === 0 || i === rows.length - 1;
+      bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${barH.toFixed(1)}" rx="3" fill="${r.count > 0 ? "#8fd8ff" : "rgba(160,200,255,.16)"}"/>`;
+      if (r.count > 0) {
+        bars += `<text x="${(x + barW / 2).toFixed(1)}" y="${(y - 5).toFixed(1)}" font-size="9" fill="#cdddf5" text-anchor="middle" font-family="JetBrains Mono">${r.count}</text>`;
+      }
+      if (showLabel) {
+        bars += `<text x="${(x + barW / 2).toFixed(1)}" y="${h + 13}" font-size="8" fill="#6f83a6" text-anchor="middle" font-family="Pretendard">${r.date.slice(5).replace("-", "/")}</text>`;
+      }
+    });
+    return `<svg viewBox="0 0 ${w} ${h + 22}" width="100%" height="150">${bars}</svg>`;
+  }
+
+  async function openAdminDashboard() {
+    $("#admin-cafe-name").textContent = (cafeData.name || "카페") + " 관리자";
+    $("#admin-pw-edit").value = cafeData.restroomPassword || "";
+    $("#admin-save-msg").textContent = "";
+    $("#admin-visit-total").textContent = "";
+    $("#admin-chart").innerHTML = '<p class="modal-hint">불러오는 중...</p>';
+    openModal(dashModal);
+
+    try {
+      const rows = await loadStats();
+      const total = rows.reduce((s, r) => s + r.count, 0);
+      $("#admin-visit-total").textContent = `최근 ${STATS_DAYS}일 · 총 ${total}명`;
+      $("#admin-chart").innerHTML = renderChart(rows);
+    } catch (e) {
+      $("#admin-chart").innerHTML = '<p class="modal-error">통계를 불러오지 못했어요</p>';
+    }
+  }
+
+  async function saveRestroomPassword() {
+    const newPw = $("#admin-pw-edit").value.trim();
+    const msg = $("#admin-save-msg");
+    if (!newPw) {
+      msg.textContent = "비밀번호를 입력해주세요";
+      msg.className = "modal-error";
+      return;
+    }
+    const btn = $("#admin-pw-save");
+    btn.disabled = true;
+    msg.textContent = "저장 중...";
+    msg.className = "modal-hint";
+    try {
+      await updateDoc(doc(db, "cafes", cafeId), {
+        restroomPassword: newPw,
+        adminPasswordAttempt: cafeData.adminPassword,
+      });
+      cafeData.restroomPassword = newPw;
+      pwOut.textContent = newPw;
+      msg.textContent = "저장됐어요 ✓";
+      msg.className = "modal-hint";
+    } catch (e) {
+      msg.textContent = "저장 실패, 다시 시도해주세요";
+      msg.className = "modal-error";
+    }
+    btn.disabled = false;
+  }
+
+  // ======================================================================
   //  wire up
   // ======================================================================
-  function init() {
+  function initGame() {
     introGoal.textContent = `${goal}번`;
     countGoal.textContent = `/${goal}`;
-    ssidOut.textContent = CONFIG.wifiSsid;
-    pwOut.textContent = CONFIG.wifiPassword;
 
     buildStars();
     buildSegs();
@@ -531,11 +816,18 @@
         e.preventDefault();
         manualShake();
       }
+      if (e.key === "Escape") closeModals();
     });
+
+    gearBtn.addEventListener("click", () => openModal(loginModal));
+    backdrop.addEventListener("click", closeModals);
+    document.querySelectorAll("[data-close]").forEach((b) => b.addEventListener("click", closeModals));
+    $("#admin-login-submit").addEventListener("click", handleAdminLogin);
+    adminPwInput.addEventListener("keydown", (e) => { if (e.key === "Enter") handleAdminLogin(); });
+    $("#admin-pw-save").addEventListener("click", saveRestroomPassword);
   }
 
-  document.addEventListener("DOMContentLoaded", init);
-})();
+  boot();
 </script>
 </body>
 </html>
